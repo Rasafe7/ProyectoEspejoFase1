@@ -31,12 +31,58 @@ async function inicializarApp() {
 
 // 4. FUNCIÓN DE RENDERIZADO: Encargada de pintar los nodos en el HTML
 function pintarTareas() {
-  // TODO: Limpiar el contenedor listaContenedor (innerHTML = '')
-  // TODO: Filtrar el array 'tareas' según el 'filtroActual' usando .filter()
-  // TODO: Recorrer el array filtrado y crear dinámicamente un elemento <li> por cada tarea
-  // TODO: Configurar las clases CSS según la prioridad y el estado (completada)
-  // TODO: Añadir un botón dentro de cada <li> para poder alternar el estado (Completada/Pendiente)
-  // TODO: Inyectar el <li> resultante en listaContenedor usando .appendChild()
+
+  // Limpiar el contenedor de la lista
+  listaContenedor.replaceChildren();
+
+  // Filtrar las tareas según el filtro actual
+  const tareasFiltradas = tareas.filter(tarea => {
+    if (filtroActual === 'Pendientes') {
+      return !tarea.completada;
+    }
+
+    if (filtroActual === 'Completadas') {
+      return tarea.completada;
+    }
+
+    return true;
+  });
+
+  // Recorrer las tareas filtradas
+  tareasFiltradas.forEach(tarea => {
+
+    // Crear el elemento <li>
+    const elementoTarea = document.createElement('li');
+
+    // Añadir las clases correspondientes a la tarea
+    elementoTarea.classList.add('item-tarea', tarea.prioridad);
+
+    // Crear el elemento <span> para el título
+    const textoTarea = document.createElement('span');
+    textoTarea.textContent = tarea.titulo;
+
+    // Si la tarea está completada, añadir la clase correspondiente
+    if (tarea.completada) {
+      elementoTarea.classList.add('completada');
+    }
+
+    // Crear el botón para cambiar el estado de la tarea
+    const botonEstado = document.createElement('button');
+    botonEstado.type = 'button';
+
+    if (tarea.completada) {
+      botonEstado.textContent = 'Marcar pendiente';
+    } else {
+      botonEstado.textContent = 'Completar';
+    }
+
+    // Añadir el título y el botón al <li>
+    elementoTarea.appendChild(textoTarea);
+    elementoTarea.appendChild(botonEstado);
+
+    // Añadir el <li> a la lista
+    listaContenedor.appendChild(elementoTarea);
+  });
 }
 
 // 5. MANEJO DE EVENTOS: Captura de formulario
