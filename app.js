@@ -76,6 +76,25 @@ function pintarTareas() {
       botonEstado.textContent = 'Completar';
     }
 
+    // Evento para cambiar el estado de la tarea
+botonEstado.addEventListener('click', () => {
+
+  // Actualizar el array de tareas de forma inmutable
+  tareas = tareas.map(tareaActual => {
+    if (tareaActual.id === tarea.id) {
+      return {
+        ...tareaActual,
+        completada: !tareaActual.completada
+      };
+    }
+
+    return tareaActual;
+  });
+
+  // Actualizar la lista visual
+  pintarTareas();
+});
+
     // Añadir el título y el botón al <li>
     elementoTarea.appendChild(textoTarea);
     elementoTarea.appendChild(botonEstado);
