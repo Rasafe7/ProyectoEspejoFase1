@@ -18,40 +18,141 @@ const botonesFiltro = document.querySelectorAll('.btn-filtro');
 
 // 3. FUNCIÓN ASÍNCRONA (AJAX simulado): Debe ejecutarse al arrancar la web
 async function inicializarApp() {
-  // TODO: Simular una espera de 1.5 segundos usando una Promesa (setTimeout)
-  // TODO: Una vez pasada la espera, ocultar el div #loading-state
-  // TODO: Invocar a la función pintarTareas()
+
+  // Simular una espera de 1.5 segundos usando una Promesa (setTimeout)
+  await new Promise(resolve => setTimeout(resolve, 1500));
+
+  // Una vez pasada la espera, ocultar el div #loading-state
+  loadingState.style.display = 'none';
+
+  // Invocar a la función pintarTareas()
+  pintarTareas();
 }
 
 // 4. FUNCIÓN DE RENDERIZADO: Encargada de pintar los nodos en el HTML
 function pintarTareas() {
-  // TODO: Limpiar el contenedor listaContenedor (innerHTML = '')
-  // TODO: Filtrar el array 'tareas' según el 'filtroActual' usando .filter()
-  // TODO: Recorrer el array filtrado y crear dinámicamente un elemento <li> por cada tarea
-  // TODO: Configurar las clases CSS según la prioridad y el estado (completada)
-  // TODO: Añadir un botón dentro de cada <li> para poder alternar el estado (Completada/Pendiente)
-  // TODO: Inyectar el <li> resultante en listaContenedor usando .appendChild()
+
+  // Limpiar el contenedor de la lista
+  listaContenedor.replaceChildren();
+
+  // Filtrar las tareas según el filtro actual
+  const tareasFiltradas = tareas.filter(tarea => {
+    if (filtroActual === 'Pendientes') {
+      return !tarea.completada;
+    }
+
+    if (filtroActual === 'Completadas') {
+      return tarea.completada;
+    }
+
+    return true;
+  });
+
+  // Recorrer las tareas filtradas
+  tareasFiltradas.forEach(tarea => {
+
+    // Crear el elemento <li>
+    const elementoTarea = document.createElement('li');
+
+    // Añadir las clases correspondientes a la tarea
+    elementoTarea.classList.add('item-tarea', tarea.prioridad);
+
+    // Crear el elemento <span> para el título
+    const textoTarea = document.createElement('span');
+    textoTarea.textContent = tarea.titulo;
+
+    // Si la tarea está completada, añadir la clase correspondiente
+    if (tarea.completada) {
+      elementoTarea.classList.add('completada');
+    }
+
+    // Crear el botón para cambiar el estado de la tarea
+    const botonEstado = document.createElement('button');
+    botonEstado.type = 'button';
+
+    if (tarea.completada) {
+      botonEstado.textContent = 'Marcar pendiente';
+    } else {
+      botonEstado.textContent = 'Completar';
+    }
+
+    // Evento para cambiar el estado de la tarea
+botonEstado.addEventListener('click', () => {
+
+  // Actualizar el array de tareas de forma inmutable
+  tareas = tareas.map(tareaActual => {
+    if (tareaActual.id === tarea.id) {
+      return {
+        ...tareaActual,
+        completada: !tareaActual.completada
+      };
+    }
+
+    return tareaActual;
+  });
+
+  // Actualizar la lista visual
+  pintarTareas();
+});
+
+    // Añadir el título y el botón al <li>
+    elementoTarea.appendChild(textoTarea);
+    elementoTarea.appendChild(botonEstado);
+
+    // Añadir el <li> a la lista
+    listaContenedor.appendChild(elementoTarea);
+  });
 }
 
 // 5. MANEJO DE EVENTOS: Captura de formulario
 formulario.addEventListener('submit', (event) => {
   event.preventDefault();
-  
-  // TODO: Capturar los valores de los inputs de forma segura
-  // TODO: Crear un nuevo objeto tarea inmutable con un id único (Date.now())
-  // TODO: Añadir el objeto al array global de tareas de forma inmutable (operador spread)
-  // TODO: Volver a invocar pintarTareas() y resetear el formulario
+
+  // Capturar los valores de los inputs de forma segura
+  const titulo = inputTitulo.value.trim();
+  const prioridad = selectPrioridad.value;
+
+  // Comprobar que el título no esté vacío
+  if (titulo === '') {
+    inputTitulo.focus();
+    return;
+  }
+
+  // Crear un nuevo objeto tarea con un id único
+  const nuevaTarea = {
+    id: Date.now(),
+    titulo: titulo,
+    prioridad: prioridad,
+    completada: false
+  };
+
+  // Añadir la tarea al array de forma inmutable usando spread
+  tareas = [...tareas, nuevaTarea];
+
+  // Volver a pintar las tareas
+  pintarTareas();
+
+  // Resetear el formulario
+  formulario.reset();
 });
 
 // 6. MANEJO DE EVENTOS: Captura de botones de filtrado
 botonesFiltro.forEach(boton => {
   boton.addEventListener('click', (event) => {
-    // Quitar clase active al botón anterior y ponérsela al pulsado
-    document.querySelector('.btn-filtro.active').classList.remove('active');
-    event.target.classList.add('active');
 
-    // TODO: Actualizar la variable 'filtroActual' con el atributo 'data-filtro' del botón
-    // TODO: Invocar pintarTareas() para refrescar la pantalla
+    // Quitar la clase active de todos los botones
+    botonesFiltro.forEach(botonFiltro => {
+      botonFiltro.classList.remove('active');
+    });
+
+    // Añadir la clase active al botón pulsado
+    event.currentTarget.classList.add('active');
+
+    // Actualizar el filtro según el atributo data-filtro
+    filtroActual = event.currentTarget.dataset.filtro;
+
+    // Volver a pintar las tareas
+    pintarTareas();
   });
 });
 
