@@ -36,9 +36,17 @@
     <!-- Contenedor Dinámico para las Tareas -->
     <main class="tasks-section">
       <div id="loading-state" class="loading">Cargando tareas desde el servidor...</div>
+      <h2>Gestión de Tareas</h2>
       <ul id="lista-tareas">
         <!-- Las tareas generadas con JS se inyectarán aquí -->
       </ul>
+
+      <section class="mirror-section" aria-labelledby="titulo-espejo">
+        <h2 id="titulo-espejo">Monitor de Estado (Vista Cliente)</h2>
+        <ul id="lista-espejo" aria-live="polite">
+          <!-- La vista de solo lectura se sincroniza desde el mismo estado -->
+        </ul>
+      </section>
     </main>
   </div>
 

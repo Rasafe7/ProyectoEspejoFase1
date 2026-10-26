@@ -13,8 +13,9 @@ const formulario = document.querySelector('#form-tareas');
 const inputTitulo = document.querySelector('#input-titulo');
 const selectPrioridad = document.querySelector('#select-prioridad');
 const listaContenedor = document.querySelector('#lista-tareas');
+const listaEspejo = document.querySelector('#lista-espejo');
 const loadingState = document.querySelector('#loading-state');
-const botonesFiltro = document.querySelectorAll('.btn-filtro');
+const seccionFiltros = document.querySelector('.filter-section');
 
 // 3. FUNCIÓN ASÍNCRONA (AJAX simulado): Debe ejecutarse al arrancar la web
 async function inicializarApp() {
@@ -34,6 +35,7 @@ function pintarTareas() {
 
   // Limpiar el contenedor de la lista
   listaContenedor.replaceChildren();
+  listaEspejo.replaceChildren();
 
   // Filtrar las tareas según el filtro actual
   const tareasFiltradas = tareas.filter(tarea => {
@@ -69,6 +71,8 @@ function pintarTareas() {
     // Crear el botón para cambiar el estado de la tarea
     const botonEstado = document.createElement('button');
     botonEstado.type = 'button';
+    botonEstado.classList.add('btn-accion');
+    botonEstado.dataset.id = tarea.id;
 
     if (tarea.completada) {
       botonEstado.textContent = 'Marcar pendiente';
@@ -76,24 +80,7 @@ function pintarTareas() {
       botonEstado.textContent = 'Completar';
     }
 
-    // Evento para cambiar el estado de la tarea
-botonEstado.addEventListener('click', () => {
-
-  // Actualizar el array de tareas de forma inmutable
-  tareas = tareas.map(tareaActual => {
-    if (tareaActual.id === tarea.id) {
-      return {
-        ...tareaActual,
-        completada: !tareaActual.completada
-      };
-    }
-
-    return tareaActual;
-  });
-
-  // Actualizar la lista visual
-  pintarTareas();
-});
+    // El listener delegado de la lista identifica la tarea mediante data-id
 
     // Añadir el título y el botón al <li>
     elementoTarea.appendChild(textoTarea);
@@ -102,7 +89,34 @@ botonEstado.addEventListener('click', () => {
     // Añadir el <li> a la lista
     listaContenedor.appendChild(elementoTarea);
   });
+
+  // La vista espejo refleja todas las tareas, sin controles ni filtro de gestión.
+  tareas.forEach(tarea => {
+    const elementoEspejo = document.createElement('li');
+    elementoEspejo.classList.add('item-tarea', tarea.prioridad);
+    elementoEspejo.classList.add(tarea.completada ? 'completada' : 'pendiente');
+
+    const textoEspejo = document.createElement('span');
+    textoEspejo.textContent = `[RÉPLICA] ${tarea.titulo} — Estado: ${tarea.completada ? 'Hecho' : 'Pendiente'}`;
+
+    elementoEspejo.appendChild(textoEspejo);
+    listaEspejo.appendChild(elementoEspejo);
+  });
 }
+
+// Delegación: un único listener gestiona los botones actuales y futuros de la lista.
+listaContenedor.addEventListener('click', (event) => {
+  const boton = event.target.closest('.btn-accion');
+  if (!boton || !listaContenedor.contains(boton)) return;
+
+  const idBuscar = Number(boton.dataset.id);
+  tareas = tareas.map(tarea => tarea.id === idBuscar
+    ? { ...tarea, completada: !tarea.completada }
+    : tarea
+  );
+
+  pintarTareas();
+});
 
 // 5. MANEJO DE EVENTOS: Captura de formulario
 formulario.addEventListener('submit', (event) => {
@@ -136,24 +150,17 @@ formulario.addEventListener('submit', (event) => {
   formulario.reset();
 });
 
-// 6. MANEJO DE EVENTOS: Captura de botones de filtrado
-botonesFiltro.forEach(boton => {
-  boton.addEventListener('click', (event) => {
+// 6. MANEJO DE EVENTOS: Delegación de los botones de filtrado
+seccionFiltros.addEventListener('click', (event) => {
+  const boton = event.target.closest('.btn-filtro');
+  if (!boton || !seccionFiltros.contains(boton)) return;
 
-    // Quitar la clase active de todos los botones
-    botonesFiltro.forEach(botonFiltro => {
-      botonFiltro.classList.remove('active');
-    });
-
-    // Añadir la clase active al botón pulsado
-    event.currentTarget.classList.add('active');
-
-    // Actualizar el filtro según el atributo data-filtro
-    filtroActual = event.currentTarget.dataset.filtro;
-
-    // Volver a pintar las tareas
-    pintarTareas();
+  seccionFiltros.querySelectorAll('.btn-filtro').forEach(botonFiltro => {
+    botonFiltro.classList.toggle('active', botonFiltro === boton);
   });
+
+  filtroActual = boton.dataset.filtro;
+  pintarTareas();
 });
 
 // Arrancar la aplicación
